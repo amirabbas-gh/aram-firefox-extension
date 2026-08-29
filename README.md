@@ -1,4 +1,4 @@
-# Aram (آرام)
+# Aram
 
 A personal Firefox extension that blocks social media, closes YouTube Shorts, and puts a daily cap on YouTube so attention can go back to work, books, and the rest of life.
 
