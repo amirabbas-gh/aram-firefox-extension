@@ -119,6 +119,8 @@
           pointer-events: none;
         }
         .badge.warn { background: #ffe7d6; }
+        .badge.is-paused { background: #efe0bc; }
+        .badge.is-paused .kicker { color: #6d5b45; }
         .top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
         .top img { width: 42px; height: 42px; image-rendering: pixelated; }
         .kicker { font-size: 12px; color: #d85a32; font-weight: 700; }
@@ -178,7 +180,7 @@
           <div class="top">
             <img src="${bird}" alt="" />
             <div>
-              <div class="kicker">هنوز اینجایی؟</div>
+              <div class="kicker" id="kicker">هنوز اینجایی؟</div>
               <div class="brand">یادآوری آرام</div>
             </div>
           </div>
@@ -218,6 +220,10 @@
     setTimeout(() => toast.classList.remove("show"), 7000);
   }
 
+  function pageIsForeground() {
+    return document.visibilityState === "visible" && document.hasFocus();
+  }
+
   function render(state) {
     if (isShortsPath()) return;
     const shadow = ensureUi();
@@ -227,12 +233,18 @@
     const remain = Math.max(0, limit - used);
     const badge = shadow.getElementById("badge");
     const veil = shadow.getElementById("veil");
+    const counting = pageIsForeground() && state.counting !== false;
 
+    shadow.getElementById("kicker").textContent = counting ? "هنوز اینجایی؟" : "شمرده نمی‌شود";
     shadow.getElementById("time").textContent = `امروز ${formatFa(used)} در یوتیوب بودی`;
-    shadow.getElementById("remain").textContent =
-      remain > 0 ? `${formatFa(remain)} تا سقف مانده` : "سقف امروز تمام شد";
+    shadow.getElementById("remain").textContent = !counting && !state.limitReached
+      ? "شمارش فقط وقتی این صفحه فعال باشد"
+      : remain > 0
+        ? `${formatFa(remain)} تا سقف مانده`
+        : "سقف امروز تمام شد";
     shadow.getElementById("fill").style.width = `${Math.round(ratio * 100)}%`;
     badge.classList.toggle("warn", ratio >= 0.75);
+    badge.classList.toggle("is-paused", !counting && !state.limitReached);
 
     if (state.limitReached) {
       veil.classList.add("show");
@@ -246,7 +258,7 @@
     const every = (state.reminderEveryMinutes || 10) * 60;
     const bucket = Math.floor(used / every);
     const toastKey = `${dayKeyLocal()}-${bucket}`;
-    if (bucket > 0 && used >= every && toastKey !== lastToastKey && Date.now() - lastReminderAt > 20000) {
+    if (counting && bucket > 0 && used >= every && toastKey !== lastToastKey && Date.now() - lastReminderAt > 20000) {
       lastToastKey = toastKey;
       lastReminderAt = Date.now();
       showToast(shadow, used, limit);
@@ -321,6 +333,9 @@
   document.addEventListener("yt-navigate-start", redirectShorts);
   document.addEventListener("yt-navigate-finish", refresh);
   window.addEventListener("yt-page-data-updated", refresh);
+  window.addEventListener("focus", refresh);
+  window.addEventListener("blur", refresh);
+  document.addEventListener("visibilitychange", refresh);
   setInterval(redirectShorts, 700);
   setInterval(refresh, 8000);
 

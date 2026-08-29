@@ -20,8 +20,60 @@ import {
 const api = typeof browser !== "undefined" ? browser : chrome;
 const YOUTUBE_LIMIT_RULE_ID = 9001;
 const CUSTOM_RULE_START = 100;
+const IDLE_SECONDS = 30;
+const COUNTED_RECENT_MS = 12000;
 
 let lastPruneDay = "";
+let lastIdleState = "active";
+const lastCountedAt = new Map();
+
+try {
+  api.idle.setDetectionInterval(IDLE_SECONDS);
+} catch {
+  /* older runtimes */
+}
+
+if (api.idle?.onStateChanged) {
+  api.idle.onStateChanged.addListener((state) => {
+    lastIdleState = state;
+  });
+}
+
+api.tabs.onRemoved.addListener((tabId) => {
+  lastCountedAt.delete(tabId);
+});
+
+async function systemIsActive() {
+  if (lastIdleState !== "active") return false;
+  try {
+    const state = await api.idle.queryState(IDLE_SECONDS);
+    lastIdleState = state;
+    return state === "active";
+  } catch {
+    return true;
+  }
+}
+
+async function tabIsInFocus(tab) {
+  if (!tab?.active) return false;
+  try {
+    const win = await api.windows.get(tab.windowId);
+    return Boolean(win?.focused);
+  } catch {
+    return false;
+  }
+}
+
+function recentlyCounted(tabId) {
+  if (typeof tabId !== "number") return false;
+  return Date.now() - (lastCountedAt.get(tabId) || 0) < COUNTED_RECENT_MS;
+}
+
+async function isActivelyFocusing(tab) {
+  if (!(await tabIsInFocus(tab))) return false;
+  if (!(await systemIsActive())) return false;
+  return true;
+}
 
 async function isTemporarilyUnlocked() {
   const settings = await getSettings(api);
@@ -156,13 +208,11 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const tabId = sender.tab?.id;
   const run = async () => {
     if (message?.type === "heartbeat") {
-      const idleState = await api.idle.queryState(60);
-      if (idleState !== "active") return { ok: true, ignored: "idle" };
-
       const tab = sender.tab;
-      if (!tab?.active) return { ok: true, ignored: "inactive-tab" };
-      const win = await api.windows.get(tab.windowId);
-      if (!win.focused) return { ok: true, ignored: "unfocused" };
+      if (message.engaged === false) return { ok: true, ignored: "not-engaged" };
+      if (!(await isActivelyFocusing(tab))) {
+        return { ok: true, ignored: lastIdleState !== "active" ? "idle" : "unfocused" };
+      }
 
       const host = trackingHost(message.url || tab.url);
       if (!host) return { ok: true, ignored: "skip-host" };
@@ -172,8 +222,9 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return { ok: true, ignored: "blocked" };
       }
 
-      const seconds = Math.min(15, Math.max(1, Number(message.seconds) || 5));
+      const seconds = Math.min(8, Math.max(1, Number(message.seconds) || 5));
       const total = await incrementTime(api, host, seconds);
+      if (typeof tabId === "number") lastCountedAt.set(tabId, Date.now());
       const settings = await getSettings(api);
       const youtubeUsed = isYouTubeHost(host) ? total : await youtubeSecondsToday();
       const limitSeconds = settings.youtubeLimitMinutes * 60;
@@ -207,12 +258,16 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message?.type === "get-focus-state") {
       const settings = await getSettings(api);
       const used = await youtubeSecondsToday();
+      const tab = sender.tab;
+      const focusing = await isActivelyFocusing(tab);
+      const seen = typeof tabId === "number" && lastCountedAt.has(tabId);
       return {
         youtubeUsed: used,
         limitSeconds: settings.youtubeLimitMinutes * 60,
         reminderEveryMinutes: settings.reminderEveryMinutes,
         unlocked: await isTemporarilyUnlocked(),
-        limitReached: used >= settings.youtubeLimitMinutes * 60 && !(await isTemporarilyUnlocked())
+        limitReached: used >= settings.youtubeLimitMinutes * 60 && !(await isTemporarilyUnlocked()),
+        counting: focusing && (!seen || recentlyCounted(tabId))
       };
     }
 
