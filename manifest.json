@@ -1,14 +1,16 @@
 {
   "manifest_version": 3,
   "name": "آرام",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "تمرکز شخصی: بلاک شبکه‌های اجتماعی، بستن شورت‌های یوتیوب، سقف روزانه یوتیوب و گزارش زمان.",
   "browser_specific_settings": {
     "gecko": {
       "id": "aram-focus@personal.local",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
-        "required": ["none"]
+        "required": [
+          "none"
+        ]
       }
     }
   },
@@ -26,7 +28,9 @@
     }
   },
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "background.js"
+    ],
     "type": "module"
   },
   "permissions": [
@@ -37,7 +41,9 @@
     "webNavigation",
     "declarativeNetRequest"
   ],
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "declarative_net_request": {
     "rule_resources": [
       {
@@ -61,7 +67,9 @@
         "*://*.threads.net/*",
         "*://threads.net/*"
       ],
-      "js": ["content/block-social.js"],
+      "js": [
+        "content/block-social.js"
+      ],
       "run_at": "document_start"
     },
     {
@@ -71,12 +79,18 @@
         "*://*.youtu.be/*",
         "*://youtu.be/*"
       ],
-      "js": ["content/youtube.js"],
+      "js": [
+        "content/youtube.js"
+      ],
       "run_at": "document_start"
     },
     {
-      "matches": ["<all_urls>"],
-      "js": ["content/heartbeat.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content/heartbeat.js"
+      ],
       "run_at": "document_idle",
       "match_about_blank": false
     }
@@ -96,7 +110,9 @@
         "fonts/Vazir.ttf",
         "assets/*"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }
