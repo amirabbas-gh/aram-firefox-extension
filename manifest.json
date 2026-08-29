@@ -29,12 +29,10 @@
   "permissions": [
     "storage",
     "tabs",
-    "windows",
     "alarms",
     "idle",
     "webNavigation",
-    "declarativeNetRequest",
-    "scripting"
+    "declarativeNetRequest"
   ],
   "host_permissions": ["<all_urls>"],
   "declarative_net_request": {
