@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <title>آرام — یادآوری یوتیوب</title>
+    <style>
+      @font-face {
+        font-family: "YekanBakh";
+        src: url("../../fonts/YekanBakh-VF.ttf") format("truetype-variations"),
+             url("../../fonts/YekanBakh-VF.ttf") format("truetype");
+        font-weight: 100 900;
+        font-style: normal;
+      }
+      html, body { margin: 0; direction: ltr; }
+      body { background: #111; }
+      .stage { display: inline-block; padding: 16px 28px 16px 16px; background: #111; }
+      .badge {
+        direction: rtl;
+        width: 276px;
+        padding: 10px 12px;
+        background: #fff6e3;
+        color: #1d2a22;
+        border: 3px solid #16352a;
+        box-shadow: 4px 4px 0 #16352a;
+        font-family: "YekanBakh", Tahoma, sans-serif;
+      }
+      .top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+      .top img { width: 42px; height: 42px; image-rendering: pixelated; }
+      .kicker { font-size: 12px; color: #d85a32; font-weight: 700; }
+      .brand { font-size: 11px; color: #6d5b45; }
+      .time { font-size: 14px; font-weight: 700; line-height: 1.7; }
+      .remain { font-size: 12px; color: #6d5b45; }
+      .bar { height: 8px; margin-top: 8px; background: #efe0bc; border: 2px solid #16352a; }
+      .bar > i { display: block; height: 100%; width: 60%; background: #f2c14e; }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="shot">
+      <div class="badge">
+        <div class="top">
+          <img src="../../assets/bulbul.gif" alt="" />
+          <div>
+            <div class="kicker">هنوز اینجایی؟</div>
+            <div class="brand">یادآوری آرام</div>
+          </div>
+        </div>
+        <div class="time">امروز ۱۸ دقیقه در یوتیوب بودی</div>
+        <div class="remain">۱۲ دقیقه تا سقف مانده</div>
+        <div class="bar"><i></i></div>
+      </div>
+    </div>
+  </body>
+</html>

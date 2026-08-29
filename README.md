@@ -3,7 +3,7 @@
 A personal Firefox extension that blocks social media, closes YouTube Shorts, and puts a daily cap on YouTube so attention can go back to work, books, and the rest of life.
 
 <p align="center">
-  <img src="docs/popup.png" alt="Aram focus report popup" width="420">
+  <img src="docs/popup.gif" alt="Aram focus report popup" width="360">
 </p>
 
 ## Summary
@@ -17,18 +17,18 @@ It is not trying to block the internet. It is trying to make endless scroll hard
 When you open Instagram or Shorts, you get these pages instead of the feed:
 
 <p align="center">
-  <img src="docs/blocked-social.png" alt="Instagram blocked page" width="48%">
-  <img src="docs/blocked-shorts.png" alt="YouTube Shorts blocked page" width="48%">
+  <img src="docs/blocked-social.gif" alt="Instagram blocked page" width="360">
+  <img src="docs/blocked-shorts.gif" alt="YouTube Shorts blocked page" width="360">
 </p>
 
 On a normal YouTube video, a reminder stays in the corner. When the daily cap is reached, YouTube is closed until tomorrow:
 
 <p align="center">
-  <img src="docs/youtube-reminder.png" alt="YouTube time reminder on a video page" width="72%">
+  <img src="docs/youtube-reminder.gif" alt="YouTube time reminder on a video page" width="300">
 </p>
 
 <p align="center">
-  <img src="docs/blocked-limit.png" alt="YouTube daily limit reached page" width="48%">
+  <img src="docs/blocked-limit.gif" alt="YouTube daily limit reached page" width="360">
 </p>
 
 ## What it does
