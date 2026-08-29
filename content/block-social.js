@@ -3,7 +3,7 @@
 
   function blockNow() {
     try {
-      document.documentElement.innerHTML = "";
+      document.documentElement.replaceChildren();
     } catch {
       /* ignore */
     }

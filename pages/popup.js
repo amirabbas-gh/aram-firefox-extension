@@ -68,28 +68,53 @@ function renderYoutube(settings, used) {
 function renderList(totals) {
   const root = document.getElementById("site-list");
   const rows = Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  root.replaceChildren();
   if (!rows.length) {
-    root.innerHTML = `<div class="empty">هنوز چیزی ثبت نشده.<br>همین بهتر است.</div>`;
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.append("هنوز چیزی ثبت نشده.", document.createElement("br"), "همین بهتر است.");
+    root.append(empty);
     return;
   }
   const max = rows[0][1] || 1;
-    root.innerHTML = rows.map(([host, seconds]) => `
-    <div class="row">
-      <div class="row-top">
-        <span class="site">
-          <i class="dot" style="--c:${hostTone(host)}"></i>
-          ${siteLabel(host)}
-        </span>
-        <b>${formatDuration(seconds)}</b>
-      </div>
-      <div class="mini"><i style="width:${Math.round((seconds / max) * 100)}%"></i></div>
-    </div>
-  `).join("");
+  for (const [host, seconds] of rows) {
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const top = document.createElement("div");
+    top.className = "row-top";
+
+    const site = document.createElement("span");
+    site.className = "site";
+    const dot = document.createElement("i");
+    dot.className = "dot";
+    dot.style.setProperty("--c", hostTone(host));
+    site.append(dot, siteLabel(host));
+
+    const time = document.createElement("b");
+    time.textContent = formatDuration(seconds);
+    top.append(site, time);
+
+    const mini = document.createElement("div");
+    mini.className = "mini";
+    const fill = document.createElement("i");
+    fill.style.width = `${Math.round((seconds / max) * 100)}%`;
+    mini.append(fill);
+
+    row.append(top, mini);
+    root.append(row);
+  }
 }
 
 function renderExtras(hosts) {
   const root = document.getElementById("extra-list");
-  root.innerHTML = (hosts || []).map((host) => `<span class="chip">${host}</span>`).join("");
+  root.replaceChildren();
+  for (const host of hosts || []) {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = host;
+    root.append(chip);
+  }
 }
 
 function redirectTotal(redirects, keys) {

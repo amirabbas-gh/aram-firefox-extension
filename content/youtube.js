@@ -36,6 +36,18 @@
 
   const FONT_STACK = '"YekanBakh", "Vazir", Tahoma, sans-serif';
 
+  function el(tag, attrs = {}, kids = []) {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(attrs)) {
+      if (value == null) continue;
+      if (key === "class") node.className = value;
+      else if (key === "text") node.textContent = value;
+      else node.setAttribute(key, value);
+    }
+    for (const kid of kids) node.appendChild(kid);
+    return node;
+  }
+
   function overlayFontCss() {
     const yekan = api.runtime.getURL("fonts/YekanBakh-VF.ttf");
     const vazirWoff = api.runtime.getURL("fonts/Vazir.woff2");
@@ -90,114 +102,116 @@
     const shadow = host.attachShadow({ mode: "open" });
     const bird = api.runtime.getURL("assets/bulbul.gif");
     const glass = api.runtime.getURL("assets/hourglass.gif");
-    shadow.innerHTML = `
-      <style>
-        ${overlayFontCss()}
-        :host { all: initial; }
-        .wrap, .badge, .toast, .veil, .kicker, .brand, .time, .remain, .veil h1, .veil p {
-          font-family: ${FONT_STACK};
-        }
-        .badge {
-          position: fixed;
-          z-index: 2147483646;
-          left: 16px;
-          bottom: 16px;
-          width: min(276px, calc(100vw - 32px));
-          padding: 10px 12px;
-          background: #fff6e3;
-          color: #1d2a22;
-          border: 3px solid #16352a;
-          box-shadow: 4px 4px 0 #16352a;
-          direction: rtl;
-          opacity: 1;
-          transform: translateY(0);
-          transition: opacity 0.18s ease, transform 0.18s ease;
-        }
-        .badge.is-away {
-          opacity: 0;
-          transform: translateY(18px);
-          pointer-events: none;
-        }
-        .badge.warn { background: #ffe7d6; }
-        .badge.is-paused { background: #efe0bc; }
-        .badge.is-paused .kicker { color: #6d5b45; }
-        .top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-        .top img { width: 42px; height: 42px; image-rendering: pixelated; }
-        .kicker { font-size: 12px; color: #d85a32; font-weight: 700; }
-        .brand { font-size: 11px; color: #6d5b45; }
-        .time { font-size: 14px; font-weight: 700; line-height: 1.7; }
-        .remain { font-size: 12px; color: #6d5b45; }
-        .bar { height: 8px; margin-top: 8px; background: #efe0bc; border: 2px solid #16352a; }
-        .bar > i { display: block; height: 100%; width: 0; background: #f2c14e; }
-        .toast {
-          position: fixed;
-          z-index: 2147483647;
-          left: 50%;
-          top: 72px;
-          transform: translateX(-50%);
-          background: #fff6e3;
-          color: #1d2a22;
-          border: 3px solid #16352a;
-          box-shadow: 4px 4px 0 #16352a;
-          padding: 12px 16px;
-          direction: rtl;
-          text-align: center;
-          max-width: 340px;
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 0.3s ease;
-        }
-        .toast.show { opacity: 1; }
-        .toast.is-away { opacity: 0; }
-        .toast b { display: block; font-size: 16px; margin-bottom: 4px; }
-        .veil {
-          display: none;
-          position: fixed;
-          inset: 0;
-          z-index: 2147483647;
-          background: #f3e2c4;
-          color: #1d2a22;
-          direction: rtl;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          padding: 28px;
-        }
-        .veil.show { display: flex; }
-        .veil-card {
-          width: min(480px, 100%);
-          padding: 24px 20px;
-          background: #fff6e3;
-          border: 3px solid #16352a;
-          box-shadow: 5px 5px 0 #16352a;
-        }
-        .veil img { width: 72px; height: 72px; image-rendering: pixelated; }
-        .veil h1 { font-size: 28px; margin: 8px 0 10px; }
-        .veil p { font-size: 15px; line-height: 2; margin: 0; }
-      </style>
-      <div class="wrap">
-        <div class="badge" id="badge">
-          <div class="top">
-            <img src="${bird}" alt="" />
-            <div>
-              <div class="kicker" id="kicker">هنوز اینجایی؟</div>
-              <div class="brand">یادآوری آرام</div>
-            </div>
-          </div>
-          <div class="time" id="time">در حال شمارش…</div>
-          <div class="remain" id="remain"></div>
-          <div class="bar"><i id="fill"></i></div>
-        </div>
-        <div class="toast" id="toast"></div>
-        <div class="veil" id="veil">
-          <div class="veil-card">
-            <img src="${glass}" alt="" />
-            <h1>وقت امروز تمام شد</h1>
-            <p>یوتیوب تا فردا بسته است. برو کتاب بخوان یا سر کارت برگرد.</p>
-          </div>
-        </div>
-      </div>
+    const style = document.createElement("style");
+    style.textContent = `
+      ${overlayFontCss()}
+      :host { all: initial; }
+      .wrap, .badge, .toast, .veil, .kicker, .brand, .time, .remain, .veil h1, .veil p {
+        font-family: ${FONT_STACK};
+      }
+      .badge {
+        position: fixed;
+        z-index: 2147483646;
+        left: 16px;
+        bottom: 16px;
+        width: min(276px, calc(100vw - 32px));
+        padding: 10px 12px;
+        background: #fff6e3;
+        color: #1d2a22;
+        border: 3px solid #16352a;
+        box-shadow: 4px 4px 0 #16352a;
+        direction: rtl;
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+      }
+      .badge.is-away {
+        opacity: 0;
+        transform: translateY(18px);
+        pointer-events: none;
+      }
+      .badge.warn { background: #ffe7d6; }
+      .badge.is-paused { background: #efe0bc; }
+      .badge.is-paused .kicker { color: #6d5b45; }
+      .top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+      .top img { width: 42px; height: 42px; image-rendering: pixelated; }
+      .kicker { font-size: 12px; color: #d85a32; font-weight: 700; }
+      .brand { font-size: 11px; color: #6d5b45; }
+      .time { font-size: 14px; font-weight: 700; line-height: 1.7; }
+      .remain { font-size: 12px; color: #6d5b45; }
+      .bar { height: 8px; margin-top: 8px; background: #efe0bc; border: 2px solid #16352a; }
+      .bar > i { display: block; height: 100%; width: 0; background: #f2c14e; }
+      .toast {
+        position: fixed;
+        z-index: 2147483647;
+        left: 50%;
+        top: 72px;
+        transform: translateX(-50%);
+        background: #fff6e3;
+        color: #1d2a22;
+        border: 3px solid #16352a;
+        box-shadow: 4px 4px 0 #16352a;
+        padding: 12px 16px;
+        direction: rtl;
+        text-align: center;
+        max-width: 340px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .toast.show { opacity: 1; }
+      .toast.is-away { opacity: 0; }
+      .toast b { display: block; font-size: 16px; margin-bottom: 4px; }
+      .veil {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        background: #f3e2c4;
+        color: #1d2a22;
+        direction: rtl;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 28px;
+      }
+      .veil.show { display: flex; }
+      .veil-card {
+        width: min(480px, 100%);
+        padding: 24px 20px;
+        background: #fff6e3;
+        border: 3px solid #16352a;
+        box-shadow: 5px 5px 0 #16352a;
+      }
+      .veil img { width: 72px; height: 72px; image-rendering: pixelated; }
+      .veil h1 { font-size: 28px; margin: 8px 0 10px; }
+      .veil p { font-size: 15px; line-height: 2; margin: 0; }
     `;
+    shadow.append(
+      style,
+      el("div", { class: "wrap" }, [
+        el("div", { class: "badge", id: "badge" }, [
+          el("div", { class: "top" }, [
+            el("img", { src: bird, alt: "" }),
+            el("div", {}, [
+              el("div", { class: "kicker", id: "kicker", text: "هنوز اینجایی؟" }),
+              el("div", { class: "brand", text: "یادآوری آرام" })
+            ])
+          ]),
+          el("div", { class: "time", id: "time", text: "در حال شمارش…" }),
+          el("div", { class: "remain", id: "remain" }),
+          el("div", { class: "bar" }, [el("i", { id: "fill" })])
+        ]),
+        el("div", { class: "toast", id: "toast" }),
+        el("div", { class: "veil", id: "veil" }, [
+          el("div", { class: "veil-card" }, [
+            el("img", { src: glass, alt: "" }),
+            el("h1", { text: "وقت امروز تمام شد" }),
+            el("p", { text: "یوتیوب تا فردا بسته است. برو کتاب بخوان یا سر کارت برگرد." })
+          ])
+        ])
+      ])
+    );
     (document.documentElement || document.body).appendChild(host);
     return shadow;
   }
@@ -215,7 +229,12 @@
   function showToast(shadow, used, limit) {
     const toast = shadow.getElementById("toast");
     const minutes = Math.max(1, Math.round(used / 60));
-    toast.innerHTML = `<b>یکم وایسا</b>امروز ${formatFa(used)} یوتیوب دیدی. سقف روزانه ${formatFa(limit)} است.`;
+    toast.replaceChildren(
+      el("b", { text: "یکم وایسا" }),
+      document.createTextNode(
+        `امروز ${formatFa(used)} یوتیوب دیدی. سقف روزانه ${formatFa(limit)} است.`
+      )
+    );
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 7000);
   }

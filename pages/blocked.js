@@ -40,8 +40,9 @@ const LABELS = {
 };
 
 const params = new URLSearchParams(location.search);
-const reason = params.get("reason") || window.ARAM_REASON || "social";
-const site = params.get("site") || window.ARAM_SITE || "";
+const reason =
+  params.get("reason") || document.documentElement.dataset.reason || "social";
+const site = params.get("site") || document.documentElement.dataset.site || "";
 const copy = COPY[reason] || COPY.default;
 const label = LABELS[site] || site || "این سایت";
 
