@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "آرام",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "تمرکز شخصی: بلاک شبکه‌های اجتماعی، بستن شورت‌های یوتیوب، سقف روزانه یوتیوب و گزارش زمان.",
   "browser_specific_settings": {
     "gecko": {
