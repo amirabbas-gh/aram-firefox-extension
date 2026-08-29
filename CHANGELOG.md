@@ -1,5 +1,11 @@
 # aram
 
+## 1.0.3
+
+### Patch Changes
+
+- 3c65687: Clear AMO validator warnings: require Firefox 140+ for data collection permissions, drop inline scripts, and build overlay/popup DOM without innerHTML.
+
 ## 1.0.2
 
 ### Patch Changes
