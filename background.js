@@ -12,6 +12,7 @@ import {
   getSettings,
   getTimeLog,
   incrementTime,
+  isUnlockPhrase,
   pruneOldLogs,
   saveSettings
 } from "./lib/storage.js";
@@ -49,9 +50,29 @@ function redirectTab(tabId, reason, site, original) {
   return api.tabs.update(tabId, { url: dest });
 }
 
+async function syncStaticBlocks(unlocked) {
+  try {
+    const enabled = await api.declarativeNetRequest.getEnabledRulesets();
+    const on = enabled.includes("hard_blocks");
+    if (unlocked && on) {
+      await api.declarativeNetRequest.updateEnabledRulesets({
+        disableRulesetIds: ["hard_blocks"]
+      });
+    } else if (!unlocked && !on) {
+      await api.declarativeNetRequest.updateEnabledRulesets({
+        enableRulesetIds: ["hard_blocks"]
+      });
+    }
+  } catch {
+    /* older runtimes */
+  }
+}
+
 async function syncDynamicRules() {
-  const extra = await allBlockedHosts();
-  const limitHit = await youtubeLimitReached();
+  const unlocked = await isTemporarilyUnlocked();
+  const extra = unlocked ? [] : await allBlockedHosts();
+  const limitHit = unlocked ? false : await youtubeLimitReached();
+  await syncStaticBlocks(unlocked);
   const existing = await api.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing.map((rule) => rule.id);
   const addRules = extra.map((host, index) => ({
@@ -195,7 +216,12 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
       };
     }
 
+    if (message?.type === "should-block") {
+      return { block: !(await isTemporarilyUnlocked()) };
+    }
+
     if (message?.type === "block-now") {
+      if (await isTemporarilyUnlocked()) return { ok: true, ignored: "unlocked" };
       if (typeof tabId === "number") {
         await bumpRedirect(api, message.site || "unknown");
         await redirectTab(tabId, message.reason || "social", message.site, message.url);
@@ -210,10 +236,13 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (message?.type === "emergency-unlock") {
+      if (!isUnlockPhrase(message.phrase)) {
+        return { ok: false, error: "phrase" };
+      }
       const until = Date.now() + 15 * 60 * 1000;
       const settings = await saveSettings(api, { unlockUntil: until });
       await syncDynamicRules();
-      return { settings };
+      return { ok: true, settings };
     }
 
     return { ok: false };

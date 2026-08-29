@@ -182,3 +182,6 @@ input[type="number"], input[type="text"] {
 button.primary { background: var(--gold); color: var(--forest); padding: 8px 10px; }
 button.danger { background: var(--sheet); color: var(--clay); padding: 8px 10px; }
 .unlock { margin-top: 12px; font-size: 11px; color: var(--muted); line-height: 1.9; }
+.unlock-status { margin: 8px 0 0; font-size: 12px; font-weight: 700; }
+.unlock-status.ok { color: var(--forest); }
+.unlock-status.err { color: var(--clay); }

@@ -12,13 +12,17 @@
   function redirectShorts() {
     if (!isShortsPath()) return;
     if (lastShortsCheck === location.href) return;
-    lastShortsCheck = location.href;
-    api.runtime.sendMessage({
-      type: "block-now",
-      reason: "shorts",
-      site: "youtube.com",
-      url: location.href
-    });
+    api.runtime.sendMessage({ type: "should-block" }).then((state) => {
+      if (state?.block === false) return;
+      if (lastShortsCheck === location.href) return;
+      lastShortsCheck = location.href;
+      api.runtime.sendMessage({
+        type: "block-now",
+        reason: "shorts",
+        site: "youtube.com",
+        url: location.href
+      });
+    }).catch(() => {});
   }
 
   function formatFa(seconds) {

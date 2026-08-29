@@ -4,7 +4,7 @@ import {
   formatJalaliLong,
   toFaDigits
 } from "../lib/jalali.js";
-import { lastNDayKeys, sumRange } from "../lib/storage.js";
+import { lastNDayKeys, sumRange, isUnlockPhrase } from "../lib/storage.js";
 
 const api = typeof browser !== "undefined" ? browser : null;
 
@@ -123,6 +123,13 @@ async function render(range = "day") {
   renderYoutube(settings, (store.timeLog || {})[todayKey()]?.["youtube.com"] || 0);
   renderList(totals);
   renderExtras(settings.extraBlockedHosts);
+  const remainMs = (settings.unlockUntil || 0) - Date.now();
+  if (remainMs > 0) {
+    const mins = Math.max(1, Math.ceil(remainMs / 60000));
+    setUnlockStatus("ok", `${toFaDigits(mins)} دقیقه باز است`);
+  } else {
+    setUnlockStatus("", "");
+  }
 }
 
 document.querySelectorAll(".tabs button").forEach((button) => {
@@ -166,13 +173,38 @@ document.getElementById("save").addEventListener("click", async () => {
   render(document.querySelector(".tabs button.active").dataset.range);
 });
 
-document.getElementById("unlock").addEventListener("click", async () => {
-  const phrase = document.getElementById("unlock-phrase").value.trim();
-  if (phrase !== "می‌خواهم حواسم پرت شود") return;
+function setUnlockStatus(kind, text) {
+  const status = document.getElementById("unlock-status");
+  if (!text) {
+    status.hidden = true;
+    status.textContent = "";
+    status.className = "unlock-status";
+    return;
+  }
+  status.hidden = false;
+  status.className = `unlock-status ${kind}`;
+  status.textContent = text;
+}
+
+async function tryUnlock() {
+  const phrase = document.getElementById("unlock-phrase").value;
+  if (!isUnlockPhrase(phrase)) {
+    setUnlockStatus("err", "جمله درست نیست");
+    return;
+  }
   if (!api) return;
-  await api.runtime.sendMessage({ type: "emergency-unlock" });
+  const result = await api.runtime.sendMessage({ type: "emergency-unlock", phrase });
+  if (!result?.ok) {
+    setUnlockStatus("err", "باز نشد. دوباره بزن.");
+    return;
+  }
   document.getElementById("unlock-phrase").value = "";
   render(document.querySelector(".tabs button.active").dataset.range);
+}
+
+document.getElementById("unlock").addEventListener("click", tryUnlock);
+document.getElementById("unlock-phrase").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") tryUnlock();
 });
 
 render("day");
