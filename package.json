@@ -1,7 +1,7 @@
 {
   "name": "aram",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Firefox add-on that blocks social media, closes YouTube Shorts, and caps daily YouTube time.",
   "scripts": {
     "changeset": "changeset",
