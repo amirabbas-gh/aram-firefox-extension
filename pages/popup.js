@@ -207,4 +207,15 @@ document.getElementById("unlock-phrase").addEventListener("keydown", (event) => 
   if (event.key === "Enter") tryUnlock();
 });
 
+const REPO_URL = "https://github.com/amirabbas-gh/aram-firefox-extension";
+document.getElementById("star-repo").addEventListener("click", async (event) => {
+  event.preventDefault();
+  if (api?.tabs?.create) {
+    await api.tabs.create({ url: REPO_URL });
+    window.close();
+    return;
+  }
+  window.open(REPO_URL, "_blank", "noopener,noreferrer");
+});
+
 render("day");
