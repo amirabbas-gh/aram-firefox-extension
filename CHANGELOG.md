@@ -1,5 +1,11 @@
 # aram
 
+## 1.0.2
+
+### Patch Changes
+
+- 623bb20: Add a GitHub star button in the popup that opens the repository.
+
 ## 1.0.1
 
 ### Patch Changes
