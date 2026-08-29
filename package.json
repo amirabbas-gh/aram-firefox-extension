@@ -1,0 +1,16 @@
+{
+  "name": "aram",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Firefox add-on that blocks social media, closes YouTube Shorts, and caps daily YouTube time.",
+  "scripts": {
+    "changeset": "changeset",
+    "version": "changeset version && node scripts/sync-manifest-version.mjs",
+    "lint:ext": "web-ext lint",
+    "build:ext": "web-ext build --overwrite-dest --filename=aram-{version}.zip"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.31.1",
+    "web-ext": "^8.10.0"
+  }
+}

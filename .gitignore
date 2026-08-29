@@ -1,3 +1,8 @@
+node_modules/
 web-ext-artifacts/
 dist/
 .DS_Store
+scripts/make-pixel-assets.py
+scripts/make-icons.py
+scripts/capture-docs.mjs
+scripts/shots/

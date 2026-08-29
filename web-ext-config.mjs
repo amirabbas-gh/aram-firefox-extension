@@ -15,6 +15,13 @@ export default {
     "*.md",
     ".gitignore",
     "web-ext-config.mjs",
+    "package.json",
+    "package-lock.json",
+    "node_modules",
+    "node_modules/**",
+    ".changeset",
+    ".changeset/**",
+    "CHANGELOG.md",
   ],
   build: {
     overwriteDest: true,

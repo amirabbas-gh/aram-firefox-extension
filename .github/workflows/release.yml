@@ -1,88 +1,80 @@
 name: Release
 
-# Builds an AMO-ready Firefox add-on zip and publishes it as a GitHub Release.
+# Runs on every push to main (including when a PR is merged into main).
 #
-# Trigger:
-#   - Push a version tag:     git tag v1.0.0 && git push origin v1.0.0
-#   - Or run from Actions:    workflow_dispatch with version = v1.0.0
-#
-# The tag must match manifest.json "version" (with or without a leading v).
-# Upload the attached .zip at https://addons.mozilla.org/developers/addon/submit/
+# 1. Add a changeset (`npx changeset`), commit it, and push/merge to main.
+#    changesets/action then opens/updates a "chore: version packages" PR
+#    that bumps package.json + manifest.json and updates CHANGELOG.md.
+# 2. When that version PR is merged, this workflow runs again. There are
+#    no pending changesets left (`hasChangesets == 'false'`), which is
+#    the signal to build the AMO zip and publish a GitHub Release.
 on:
   push:
-    tags:
-      - "v*"
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Release tag (e.g. v1.0.0)
-        required: true
-        default: v1.0.0
-      draft:
-        description: Create as draft release
-        required: false
-        type: boolean
-        default: false
+    branches:
+      - main
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   release:
-    name: Build and release
+    name: Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create release pull request
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: npm run version
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolve version
+        if: steps.changesets.outputs.hasChangesets == 'false'
         id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            RAW="${{ github.event.inputs.version }}"
-          else
-            RAW="${GITHUB_REF_NAME}"
-          fi
-          VERSION="${RAW#v}"
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]]; then
-            echo "Invalid version: $RAW"
-            exit 1
-          fi
-          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          VERSION=$(node -p "require('./package.json').version")
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Resolved version ${VERSION}"
-
-      - name: Check manifest version
-        run: |
-          set -euo pipefail
-          MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
-          EXPECTED="${{ steps.version.outputs.version }}"
-          if [ "$MANIFEST_VERSION" != "$EXPECTED" ]; then
-            echo "manifest.json version ($MANIFEST_VERSION) does not match release ($EXPECTED)"
-            echo "Bump the version in manifest.json before tagging."
-            exit 1
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "Release v${VERSION} already exists; skipping."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Install web-ext
-        run: npm install --global web-ext@8
 
       - name: Lint extension
-        run: web-ext lint
+        if: steps.version.outputs.publish == 'true'
+        run: npx web-ext lint
 
       - name: Package for AMO
-        run: web-ext build --overwrite-dest --filename=aram-{version}.zip
+        if: steps.version.outputs.publish == 'true'
+        run: npx web-ext build --overwrite-dest --filename=aram-{version}.zip
 
       - name: Prepare release assets
+        if: steps.version.outputs.publish == 'true'
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
@@ -102,7 +94,7 @@ jobs:
               names = zf.namelist()
           if "manifest.json" not in names:
               raise SystemExit("manifest.json missing from zip root")
-          blocked = (".github/", "docs/", "scripts/")
+          blocked = (".github/", "docs/", "scripts/", "node_modules/", ".changeset/")
           leaked = [n for n in names if n.startswith(blocked)]
           if leaked:
               raise SystemExit(f"zip contains excluded paths: {leaked}")
@@ -113,11 +105,11 @@ jobs:
           ls -la dist web-ext-artifacts
 
       - name: Create GitHub Release
+        if: steps.version.outputs.publish == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
-          draft: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.draft == 'true' }}
           generate_release_notes: true
           files: |
             dist/aram-${{ steps.version.outputs.version }}.zip
