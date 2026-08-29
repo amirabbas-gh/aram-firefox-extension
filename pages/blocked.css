@@ -1,0 +1,92 @@
+@import url("./theme.css");
+
+html, body { min-height: 100%; }
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 20px;
+  background: #f4e6c8;
+}
+
+.card {
+  width: min(520px, 100%);
+  padding: 28px 28px 26px;
+  background: var(--sheet);
+  border: var(--px) solid var(--forest);
+  box-shadow: 5px 5px 0 var(--forest);
+  text-align: center;
+}
+
+.mascot {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  margin: 0 0 8px;
+}
+
+.bird {
+  width: 88px;
+  height: 88px;
+  image-rendering: pixelated;
+}
+
+.bubble {
+  position: absolute;
+  top: 4px;
+  right: calc(50% + 36px);
+  background: var(--gold);
+  border: var(--px) solid var(--forest);
+  color: var(--forest);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 8px;
+  box-shadow: 2px 2px 0 var(--forest);
+}
+
+.badge {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 8px;
+  background: var(--clay);
+  color: #fff6e3;
+  border: 2px solid var(--forest);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: clamp(24px, 5vw, 34px);
+  line-height: 1.5;
+  font-weight: 850;
+}
+
+.lead {
+  margin: 0 auto 16px;
+  max-width: 28em;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 2;
+}
+
+.quote {
+  margin: 0 auto 22px;
+  max-width: 22em;
+  color: var(--forest);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+button, .ghost {
+  padding: 10px 16px;
+  font-size: 14px;
+}

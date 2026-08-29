@@ -1,0 +1,184 @@
+@import url("./theme.css");
+
+html, body {
+  width: 392px;
+  max-height: 600px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 7px,
+      rgba(22, 53, 42, 0.03) 7px,
+      rgba(22, 53, 42, 0.03) 8px
+    ),
+    #f3e2c4;
+}
+
+body { padding: 12px; }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.brand {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.brand img {
+  width: 42px;
+  height: 42px;
+  image-rendering: pixelated;
+}
+
+h1 { margin: 0; font-size: 20px; font-weight: 850; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
+.date { font-size: 11px; color: var(--muted); text-align: left; max-width: 9rem; line-height: 1.7; }
+
+.hero,
+.stat,
+.row,
+details {
+  background: var(--sheet);
+  border: var(--px) solid var(--forest);
+  box-shadow: 3px 3px 0 var(--forest);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.hero.warn { background: #ffe7d6; }
+
+.hero img {
+  width: 72px;
+  height: 72px;
+  image-rendering: pixelated;
+}
+
+.hero h2 { margin: 0 0 4px; font-size: 15px; }
+.hero p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.9; }
+.remain { color: var(--clay); font-weight: 800; font-size: 13px; }
+
+.bar {
+  height: 10px;
+  margin-top: 8px;
+  background: #efe0bc;
+  border: 2px solid var(--forest);
+}
+
+.bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--gold),
+    var(--gold) 6px,
+    #e0a82c 6px,
+    #e0a82c 8px
+  );
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tabs button {
+  background: var(--sheet);
+  color: var(--ink);
+  padding: 7px 4px;
+  font-size: 13px;
+}
+
+.tabs button.active {
+  background: var(--forest);
+  color: var(--gold);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.stat { padding: 10px; }
+.stat span { display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+.stat b { font-size: 14px; }
+.stat img { width: 22px; height: 22px; image-rendering: pixelated; vertical-align: -6px; margin-left: 4px; }
+
+.list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.row { padding: 9px 10px; }
+.row-top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+.site { display: flex; align-items: center; gap: 6px; }
+.dot {
+  width: 8px;
+  height: 8px;
+  background: var(--c, var(--gold));
+  border: 2px solid var(--forest);
+}
+
+.mini {
+  height: 7px;
+  background: #efe0bc;
+  border: 2px solid var(--forest);
+}
+.mini > i { display: block; height: 100%; background: var(--mint); }
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 18px 8px;
+  line-height: 2;
+}
+
+details { padding: 10px; }
+summary { cursor: pointer; font-weight: 800; font-size: 13px; color: var(--forest); }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+input[type="number"], input[type="text"] {
+  border: var(--px) solid var(--forest);
+  background: #fff6e3;
+  border-radius: 0;
+  padding: 8px;
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--forest);
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip {
+  background: var(--gold);
+  border: 2px solid var(--forest);
+  padding: 3px 7px;
+  font-size: 11px;
+}
+
+.actions { display: flex; gap: 6px; margin-top: 10px; }
+button.primary { background: var(--gold); color: var(--forest); padding: 8px 10px; }
+button.danger { background: var(--sheet); color: var(--clay); padding: 8px 10px; }
+.unlock { margin-top: 12px; font-size: 11px; color: var(--muted); line-height: 1.9; }

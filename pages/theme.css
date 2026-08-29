@@ -1,0 +1,69 @@
+@font-face {
+  font-family: "YekanBakh";
+  src: url("../fonts/YekanBakh-VF.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --paper: #f3e2c4;
+  --sheet: #fff6e3;
+  --ink: #1d2a22;
+  --forest: #16352a;
+  --clay: #d85a32;
+  --gold: #f2c14e;
+  --mint: #7eb8a2;
+  --muted: #6d5b45;
+  --px: 3px;
+  --font: "YekanBakh", Tahoma, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font);
+}
+
+img.pixel, .pixel {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+button, .ghost, input { font: inherit; }
+
+.pixel-btn,
+button,
+.ghost {
+  appearance: none;
+  border: var(--px) solid var(--forest);
+  box-shadow: var(--px) var(--px) 0 var(--forest);
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.08s steps(2, end), box-shadow 0.08s steps(2, end);
+}
+
+button:hover, .ghost:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--forest);
+}
+
+button {
+  background: var(--gold);
+  color: var(--forest);
+  font-weight: 750;
+}
+
+.ghost {
+  background: var(--sheet);
+  color: var(--ink);
+}
+
+.panel {
+  background: var(--sheet);
+  border: var(--px) solid var(--forest);
+  box-shadow: 4px 4px 0 var(--forest);
+}

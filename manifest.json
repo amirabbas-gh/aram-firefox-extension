@@ -1,0 +1,99 @@
+{
+  "manifest_version": 3,
+  "name": "آرام",
+  "version": "1.0.0",
+  "description": "تمرکز شخصی: بلاک شبکه‌های اجتماعی، بستن شورت‌های یوتیوب، سقف روزانه یوتیوب و گزارش زمان.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "aram-focus@personal.local",
+      "strict_min_version": "115.0"
+    }
+  },
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "آرام — گزارش تمرکز",
+    "default_popup": "pages/popup.html",
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    }
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "windows",
+    "alarms",
+    "idle",
+    "webNavigation",
+    "declarativeNetRequest",
+    "scripting"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "hard_blocks",
+        "enabled": true,
+        "path": "rules/hard-blocks.json"
+      }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.instagram.com/*",
+        "*://instagram.com/*",
+        "*://*.twitter.com/*",
+        "*://twitter.com/*",
+        "*://*.x.com/*",
+        "*://x.com/*",
+        "*://*.tiktok.com/*",
+        "*://tiktok.com/*",
+        "*://*.threads.net/*",
+        "*://threads.net/*"
+      ],
+      "js": ["content/block-social.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://youtube.com/*",
+        "*://*.youtu.be/*",
+        "*://youtu.be/*"
+      ],
+      "js": ["content/youtube.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/heartbeat.js"],
+      "run_at": "document_idle",
+      "match_about_blank": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "pages/blocked.html",
+        "pages/blocked-shorts.html",
+        "pages/blocked-limit.html",
+        "pages/blocked.css",
+        "pages/theme.css",
+        "pages/blocked.js",
+        "icons/mark.svg",
+        "fonts/YekanBakh-VF.ttf",
+        "assets/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

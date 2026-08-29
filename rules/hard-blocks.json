@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": { "extensionPath": "/pages/blocked.html" }
+    },
+    "condition": {
+      "urlFilter": "||instagram.com",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": { "extensionPath": "/pages/blocked.html" }
+    },
+    "condition": {
+      "urlFilter": "||twitter.com",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": { "extensionPath": "/pages/blocked.html" }
+    },
+    "condition": {
+      "urlFilter": "||x.com",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 4,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": { "extensionPath": "/pages/blocked.html" }
+    },
+    "condition": {
+      "urlFilter": "||tiktok.com",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 5,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": { "extensionPath": "/pages/blocked.html" }
+    },
+    "condition": {
+      "urlFilter": "||threads.net",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 6,
+    "priority": 10,
+    "action": {
+      "type": "redirect",
+      "redirect": { "extensionPath": "/pages/blocked-shorts.html" }
+    },
+    "condition": {
+      "regexFilter": "^https?://([^/]*\\.)?youtube\\.com/shorts(/|$|\\?)",
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]

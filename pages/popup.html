@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>آرام</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <img class="pixel" src="../assets/bulbul.gif" alt="" />
+        <div>
+          <h1>آرام</h1>
+          <p class="sub">گزارش تمرکز</p>
+        </div>
+      </div>
+      <div class="date" id="today-label"></div>
+    </header>
+
+    <section class="hero" id="youtube-hero">
+      <img class="pixel" src="../assets/hourglass.gif" alt="" />
+      <div>
+        <h2>سقف یوتیوب</h2>
+        <div class="remain" id="youtube-remain"></div>
+        <p id="youtube-copy"></p>
+        <div class="bar" id="youtube-bar"><i id="youtube-fill"></i></div>
+      </div>
+    </section>
+
+    <div class="tabs">
+      <button type="button" class="active" data-range="day">امروز</button>
+      <button type="button" data-range="week">هفته</button>
+      <button type="button" data-range="month">ماه</button>
+    </div>
+
+    <div class="summary">
+      <div class="stat">
+        <span id="total-label">زمان امروز</span>
+        <b id="total-time">—</b>
+      </div>
+      <div class="stat">
+        <span>برگشت از حواس‌پرتی <img class="pixel" src="../assets/heart.gif" alt="" /></span>
+        <b id="redirect-count">—</b>
+      </div>
+    </div>
+
+    <div class="list" id="site-list"></div>
+
+    <details>
+      <summary>تنظیمات</summary>
+      <label class="field">
+        سقف روزانهٔ یوتیوب (دقیقه)
+        <input id="limit" type="number" min="10" max="180" step="5" />
+      </label>
+      <label class="field">
+        فاصلهٔ یادآوری یوتیوب (دقیقه)
+        <input id="reminder" type="number" min="5" max="60" step="5" />
+      </label>
+      <label class="field">
+        سایت مسدود تازه
+        <input id="extra-host" type="text" placeholder="مثلا reddit.com" />
+      </label>
+      <div class="chips" id="extra-list"></div>
+      <div class="actions">
+        <button type="button" class="primary" id="save">ذخیره</button>
+        <button type="button" class="danger" id="add-host">افزودن</button>
+      </div>
+      <p class="unlock">
+        برای باز کردن ۱۵ دقیقه‌ای، این جمله را بنویس:
+        <b>می‌خواهم حواسم پرت شود</b>
+      </p>
+      <label class="field">
+        بازگشایی اضطراری
+        <input id="unlock-phrase" type="text" />
+      </label>
+      <div class="actions">
+        <button type="button" class="danger" id="unlock">۱۵ دقیقه باز شود</button>
+      </div>
+    </details>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
