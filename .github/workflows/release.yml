@@ -1,0 +1,130 @@
+name: Release
+
+# Builds an AMO-ready Firefox add-on zip and publishes it as a GitHub Release.
+#
+# Trigger:
+#   - Push a version tag:     git tag v1.0.0 && git push origin v1.0.0
+#   - Or run from Actions:    workflow_dispatch with version = v1.0.0
+#
+# The tag must match manifest.json "version" (with or without a leading v).
+# Upload the attached .zip at https://addons.mozilla.org/developers/addon/submit/
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release tag (e.g. v1.0.0)
+        required: true
+        default: v1.0.0
+      draft:
+        description: Create as draft release
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Resolve version
+        id: version
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RAW="${{ github.event.inputs.version }}"
+          else
+            RAW="${GITHUB_REF_NAME}"
+          fi
+          VERSION="${RAW#v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]]; then
+            echo "Invalid version: $RAW"
+            exit 1
+          fi
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Resolved version ${VERSION}"
+
+      - name: Check manifest version
+        run: |
+          set -euo pipefail
+          MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+          EXPECTED="${{ steps.version.outputs.version }}"
+          if [ "$MANIFEST_VERSION" != "$EXPECTED" ]; then
+            echo "manifest.json version ($MANIFEST_VERSION) does not match release ($EXPECTED)"
+            echo "Bump the version in manifest.json before tagging."
+            exit 1
+          fi
+
+      - name: Install web-ext
+        run: npm install --global web-ext@8
+
+      - name: Lint extension
+        run: web-ext lint
+
+      - name: Package for AMO
+        run: web-ext build --overwrite-dest --filename=aram-{version}.zip
+
+      - name: Prepare release assets
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          ZIP=$(ls web-ext-artifacts/*.zip | head -1)
+          test -n "$ZIP"
+          cp "$ZIP" "dist/aram-${VERSION}.zip"
+
+          python3 - <<'PY'
+          import os, zipfile
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          zip_path = Path("dist") / f"aram-{version}.zip"
+          with zipfile.ZipFile(zip_path) as zf:
+              names = zf.namelist()
+          if "manifest.json" not in names:
+              raise SystemExit("manifest.json missing from zip root")
+          blocked = (".github/", "docs/", "scripts/")
+          leaked = [n for n in names if n.startswith(blocked)]
+          if leaked:
+              raise SystemExit(f"zip contains excluded paths: {leaked}")
+          print(f"zip ok: {len(names)} files")
+          PY
+
+          (cd dist && sha256sum "aram-${VERSION}.zip" > "aram-${VERSION}.zip.sha256")
+          ls -la dist web-ext-artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          draft: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.draft == 'true' }}
+          generate_release_notes: true
+          files: |
+            dist/aram-${{ steps.version.outputs.version }}.zip
+            dist/aram-${{ steps.version.outputs.version }}.zip.sha256
+          body: |
+            Firefox add-on package for [addons.mozilla.org](https://addons.mozilla.org).
+
+            Upload `aram-${{ steps.version.outputs.version }}.zip` at the [AMO developer hub](https://addons.mozilla.org/developers/addon/submit/). Mozilla signs the add-on during review; this zip is unsigned on purpose.
+
+            This file is not a signed `.xpi`. Firefox will not permanently install it from GitHub until AMO has signed it.
