@@ -91,6 +91,8 @@
         "pages/blocked.js",
         "icons/mark.svg",
         "fonts/YekanBakh-VF.ttf",
+        "fonts/Vazir.woff2",
+        "fonts/Vazir.ttf",
         "assets/*"
       ],
       "matches": ["<all_urls>"]

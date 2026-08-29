@@ -30,25 +30,69 @@
     return `${digits(m)} دقیقه`;
   }
 
+  const FONT_STACK = '"YekanBakh", "Vazir", Tahoma, sans-serif';
+
+  function overlayFontCss() {
+    const yekan = api.runtime.getURL("fonts/YekanBakh-VF.ttf");
+    const vazirWoff = api.runtime.getURL("fonts/Vazir.woff2");
+    const vazirTtf = api.runtime.getURL("fonts/Vazir.ttf");
+    return `
+      @font-face {
+        font-family: "YekanBakh";
+        src: url("${yekan}") format("truetype-variations"),
+             url("${yekan}") format("truetype");
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "Vazir";
+        src: url("${vazirWoff}") format("woff2"),
+             url("${vazirTtf}") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+    `;
+  }
+
+  function loadOverlayFonts() {
+    if (document.getElementById("aram-fonts")) return;
+    const style = document.createElement("style");
+    style.id = "aram-fonts";
+    style.textContent = overlayFontCss();
+    document.documentElement.appendChild(style);
+
+    const yekan = api.runtime.getURL("fonts/YekanBakh-VF.ttf");
+    const vazir = api.runtime.getURL("fonts/Vazir.woff2");
+    const add = (family, url) => {
+      try {
+        const face = new FontFace(family, `url("${url}")`);
+        face.load().then((loaded) => document.fonts.add(loaded)).catch(() => {});
+      } catch {
+        /* ignore */
+      }
+    };
+    add("YekanBakh", yekan);
+    add("Vazir", vazir);
+  }
+
   function ensureUi() {
     let host = document.getElementById(ROOT_ID);
     if (host) return host.shadowRoot;
+    loadOverlayFonts();
     host = document.createElement("div");
     host.id = ROOT_ID;
-    host.style.all = "initial";
     const shadow = host.attachShadow({ mode: "open" });
-    const font = api.runtime.getURL("fonts/YekanBakh-VF.ttf");
     const bird = api.runtime.getURL("assets/bulbul.gif");
     const glass = api.runtime.getURL("assets/hourglass.gif");
     shadow.innerHTML = `
       <style>
-        @font-face {
-          font-family: YekanBakh;
-          src: url("${font}") format("truetype");
-          font-weight: 100 900;
-        }
+        ${overlayFontCss()}
         :host { all: initial; }
-        .wrap { all: initial; font-family: YekanBakh, Tahoma, sans-serif; }
+        .wrap, .badge, .toast, .veil, .kicker, .brand, .time, .remain, .veil h1, .veil p {
+          font-family: ${FONT_STACK};
+        }
         .badge {
           position: fixed;
           z-index: 2147483646;
@@ -61,13 +105,21 @@
           border: 3px solid #16352a;
           box-shadow: 4px 4px 0 #16352a;
           direction: rtl;
+          opacity: 1;
+          transform: translateY(0);
+          transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+        .badge.is-away {
+          opacity: 0;
+          transform: translateY(18px);
+          pointer-events: none;
         }
         .badge.warn { background: #ffe7d6; }
         .top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
         .top img { width: 42px; height: 42px; image-rendering: pixelated; }
-        .kicker { font-size: 12px; color: #d85a32; font-weight: 800; }
+        .kicker { font-size: 12px; color: #d85a32; font-weight: 700; }
         .brand { font-size: 11px; color: #6d5b45; }
-        .time { font-size: 14px; font-weight: 800; line-height: 1.7; }
+        .time { font-size: 14px; font-weight: 700; line-height: 1.7; }
         .remain { font-size: 12px; color: #6d5b45; }
         .bar { height: 8px; margin-top: 8px; background: #efe0bc; border: 2px solid #16352a; }
         .bar > i { display: block; height: 100%; width: 0; background: #f2c14e; }
@@ -87,8 +139,10 @@
           max-width: 340px;
           opacity: 0;
           pointer-events: none;
+          transition: opacity 0.3s ease;
         }
         .toast.show { opacity: 1; }
+        .toast.is-away { opacity: 0; }
         .toast b { display: block; font-size: 16px; margin-bottom: 4px; }
         .veil {
           display: none;
@@ -178,11 +232,11 @@
 
     if (state.limitReached) {
       veil.classList.add("show");
-      badge.style.display = "none";
+      badge.classList.add("is-away");
       pauseVideos();
     } else {
       veil.classList.remove("show");
-      badge.style.display = "block";
+      syncOverlayVisibility();
     }
 
     const every = (state.reminderEveryMinutes || 10) * 60;
@@ -193,6 +247,56 @@
       lastReminderAt = Date.now();
       showToast(shadow, used, limit);
     }
+  }
+
+  function isVideoFullscreen() {
+    return Boolean(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement
+    );
+  }
+
+  function hideOverlaySoon() {
+    if (isVideoFullscreen()) return;
+    const shadow = document.getElementById(ROOT_ID)?.shadowRoot;
+    if (!shadow) return;
+    shadow.getElementById("badge")?.classList.add("is-away");
+    const toast = shadow.getElementById("toast");
+    toast?.classList.remove("show");
+    toast?.classList.add("is-away");
+  }
+
+  function syncOverlayVisibility() {
+    const shadow = document.getElementById(ROOT_ID)?.shadowRoot;
+    if (!shadow) return;
+    if (shadow.getElementById("veil")?.classList.contains("show")) {
+      shadow.getElementById("badge")?.classList.add("is-away");
+      return;
+    }
+    const away = isVideoFullscreen();
+    shadow.getElementById("badge")?.classList.toggle("is-away", away);
+    shadow.getElementById("toast")?.classList.toggle("is-away", away);
+    if (away) shadow.getElementById("toast")?.classList.remove("show");
+  }
+
+  function watchFullscreen() {
+    ["fullscreenchange", "webkitfullscreenchange"].forEach((eventName) => {
+      document.addEventListener(eventName, syncOverlayVisibility);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "f" && event.key !== "F") return;
+      if (event.target.closest("input, textarea, [contenteditable='true']")) return;
+      hideOverlaySoon();
+    }, true);
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".ytp-fullscreen-button")) return;
+      hideOverlaySoon();
+    }, true);
+    document.addEventListener("dblclick", (event) => {
+      if (!event.target.closest("video, .html5-video-player")) return;
+      hideOverlaySoon();
+    }, true);
   }
 
   function dayKeyLocal() {
@@ -209,6 +313,7 @@
   }
 
   redirectShorts();
+  watchFullscreen();
   document.addEventListener("yt-navigate-start", redirectShorts);
   document.addEventListener("yt-navigate-finish", refresh);
   window.addEventListener("yt-page-data-updated", refresh);
